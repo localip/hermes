@@ -4,6 +4,15 @@ on:
   pull_request:
   push:
   workflow_dispatch:
+    inputs:
+      release:
+        type: boolean
+        description: Publish release to NPM
+        default: false
+      version:
+        type: string
+        description: Package version
+        required: false
 
 jobs:
   build-windows:
@@ -114,3 +123,12 @@ jobs:
         with:
           name: hermesc-tarball
           path: ./npm/hermesc/*.tgz
+
+      - name: NPM Publish
+        if: ${{ inputs.release == true }}
+        run: |
+          cd npm/hermesc
+          npm pkg set version=${{ inputs.version || github.ref_name }}
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
